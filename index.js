@@ -68,7 +68,7 @@ const run = async () => {
 	}
 
 	if(versionsNew.length) {
-		G.info('主线', '监视Node.js版本', `✔ 发现新~[版本]`, versionsNew.map(version => `~{v${version}}`));
+		G.info('主线', '监视Node.js版本', `✔ 发现新~[版本]`, ...versionsNew.map(version => `~{v${version}}`));
 	}
 	else {
 		G.info('主线', '监视Node.js版本', `○ 暂未新~[版本]`);
