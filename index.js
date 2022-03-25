@@ -12,9 +12,9 @@ import PKG from './lib/global/package.js';
 if(!~~C.interval || ~~C.interval < 1000) { throw Error('间隔无效或小于一秒'); }
 
 
-const tell = async push => {
+const hey = async push => {
 	try {
-		const { data: result } = await Axios.post(`http://${C.target.host}:${C.target.port}/api/tell/push`, {
+		const { data: result } = await Axios.post(`http://${C.target.host}:${C.target.port}/api/hey/push`, {
 			from: publicEncrypt(
 				C.publicKey.from,
 				Buffer.from(JSON.stringify({ who: C.id, app: PKG.name, }))
@@ -54,8 +54,8 @@ const run = async () => {
 		if(version && !C.version[major].includes(version)) {
 			versionsNew.unshift(version);
 
-			tell({
-				title: `Node.js 出新版本啦！`,
+			hey({
+				title: `嘿！Node.js 有新版本啦！`,
 				body: `v${version}`,
 				data: url,
 				tag: `${PKG.name} v${major}`
