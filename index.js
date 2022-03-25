@@ -41,7 +41,6 @@ const hey = async push => {
 
 
 const run = async () => {
-	const versionsNew = [];
 
 	for(const major of Object.keys(C.version)) {
 		const url = `https://nodejs.org/dist/latest-v${major}.x/`;
@@ -52,8 +51,6 @@ const run = async () => {
 
 
 		if(version && !C.version[major].includes(version)) {
-			versionsNew.unshift(version);
-
 			hey({
 				title: `嘿！Node.js 有新版本啦！`,
 				body: `v${version}`,
@@ -61,17 +58,17 @@ const run = async () => {
 				tag: `${PKG.name} v${major}`
 			});
 
+
+
 			C.__edit('version', versions => versions[major].unshift(version));
 
-			G.info('主线', '监视Node.js版本', `✔ 发现新~[版本]~{v${version}}`);
-		}
-	}
 
-	if(versionsNew.length) {
-		G.info('主线', '监视Node.js版本', `✔ 发现新~[版本]`, ...versionsNew.map(version => `~{v${version}}`));
-	}
-	else {
-		G.info('主线', '监视Node.js版本', `○ 暂未新~[版本]`);
+
+			G.info('士大夫', `~[node.js] v${major}.x`, `✔ 发现新~[版本]~{v${version}}`);
+		}
+		else {
+			G.info('士大夫', `~[node.js] v${major}.x`, `○ 暂未新~[版本]`);
+		}
 	}
 };
 
