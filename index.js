@@ -41,7 +41,6 @@ const hey = async push => {
 
 
 const run = async () => {
-
 	for(const major of Object.keys(C.version)) {
 		const url = `https://nodejs.org/dist/latest-v${major}.x/`;
 
