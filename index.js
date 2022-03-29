@@ -1,69 +1,44 @@
 import './lib/init.js';
 
-import { publicEncrypt } from 'crypto';
-
 import Axios from 'axios';
 
+import PKG from './lib/global/package.js';
 import C from './lib/global/config.js';
 import G from './lib/global/log.js';
-import PKG from './lib/global/package.js';
 
 
-if(!~~C.interval || ~~C.interval < 1000) { throw Error('间隔无效或小于一秒'); }
+import StaffWock from '@hey/hey-staff-wock';
 
 
-const hey = async push => {
-	try {
-		const { data: result } = await Axios.post(`http://${C.target.host}:${C.target.port}/api/hey/push`, {
-			from: publicEncrypt(
-				C.publicKey.from,
-				Buffer.from(JSON.stringify({ who: C.id, app: PKG.name, }))
-			).toString('base64'),
-
-			data: publicEncrypt(
-				C.publicKey.data,
-				Buffer.from(JSON.stringify(push))
-			).toString('base64')
-		}, { timeout: 1000 * 30 });
+if(!C.version) { C.$.edit('version', () => ({})); }
 
 
-		if(result?.success) {
-			G.info('主线', '推送~[通知]', `✔ `);
-		}
-		else {
-			throw Error(result?.message);
-		}
-	}
-	catch(error) {
-		G.error('主线', '推送~[通知]', `✖ ${error?.message ?? error}`);
-	}
-};
+const staff = async (hey) => {
+	for(const major of C.push.majors) {
+		if(!C.version[major]) { C.$.edit('version', versionsAll => (versionsAll[major] = []) && void 0); }
 
 
-const run = async () => {
-	for(const major of Object.keys(C.version)) {
 		const url = `https://nodejs.org/dist/latest-v${major}.x/`;
 
 		const { data: result } = await Axios.get(url, { responseType: 'text' });
+
 
 		const version = result.match(RegExp(`href="node-v(${major}\\.\\d+\\.\\d+)\\.pkg"`))?.[1];
 
 
 		if(version && !C.version[major].includes(version)) {
-			hey({
-				title: `嘿！Node.js 有新版本啦！`,
-				body: `v${version}`,
-				data: url,
-				tag: `${PKG.name} v${major}`
-			});
-
-
-
-			C.__edit('version', versions => versions[major].unshift(version));
-
+			C.$.edit('version', versionsAll => versionsAll[major].unshift(version) && void 0);
 
 
 			G.info('士大夫', `~[node.js] v${major}.x`, `✔ 发现新~[版本]~{v${version}}`);
+
+
+			hey({
+				title: `Node.js 有新版本啦！`,
+				body: `v${version}`,
+				data: url,
+				tag: `v${major}`
+			});
 		}
 		else {
 			G.info('士大夫', `~[node.js] v${major}.x`, `○ 暂未新~[版本]`);
@@ -73,5 +48,30 @@ const run = async () => {
 
 
 
-run();
-setInterval(run, C.interval);
+const wockStaff = new StaffWock(
+	C.target,
+	PKG.name, C.auth.id,
+	C.auth.who, C.auth.token,
+	C.push.interval, staff,
+	(...params) => G.info('Wock', '信息', ...params),
+	(...params) => G.error('Wock', '错误', ...params),
+);
+
+
+wockStaff.add('auth-successful', () => G.info('~[Hey]通讯', '认证', '✔ '));
+wockStaff.add('auth-failed', error => G.error('~[Hey]通讯', '认证', `✖ ${error.message ?? error}`));
+wockStaff.add('staff-start', () => G.info('~[Hey]通讯', '开始~[工作]', '✔ '));
+wockStaff.add('staff-stop', () => G.info('~[Hey]通讯', '停止~[工作]', '✔ '));
+
+wockStaff.add('set-auth', (id, who, token) => C.$.edit('auth', auth => {
+	G.info('~[Hey]通讯', '更新~[认证信息]', '✔ ',
+		`~[id]~{${id}}`,
+		`~[who]~{${who}}`,
+		`~[token]~{${token}}`,
+	);
+
+	return { id, who, token };
+}));
+
+
+wockStaff.open();
