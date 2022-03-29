@@ -2,18 +2,17 @@ import './lib/init.js';
 
 import Axios from 'axios';
 
+import StaffWock from '@hey/hey-staff-wock';
+
 import PKG from './lib/global/package.js';
 import C from './lib/global/config.js';
 import G from './lib/global/log.js';
 
 
-import StaffWock from '@hey/hey-staff-wock';
-
-
 if(!C.version) { C.$.edit('version', () => ({})); }
 
 
-const staff = async (hey) => {
+const staff = async hey => {
 	for(const major of C.push.majors) {
 		if(!C.version[major]) { C.$.edit('version', versionsAll => (versionsAll[major] = []) && void 0); }
 
